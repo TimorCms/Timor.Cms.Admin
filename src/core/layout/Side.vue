@@ -1,75 +1,41 @@
 <template>
-  <el-row>
-    <el-col>
-      <div class="sider-menu-logo">
-        <img src="https://preview.pro.ant.design/static/logo.f0355d39.svg" alt="logo" />timor.cms.admin
-      </div>
-      <el-menu
-        default-active="2"
-        class="el-menu-vertical-demo"
-        @open="handleOpen"
-        @close="handleClose"
-      >
-        <el-submenu index="1">
-          <template slot="title">
-            <i class="el-icon-location"></i>
-            <span>导航一</span>
-          </template>
-          <el-menu-item-group>
-            <template slot="title">分组一</template>
-            <el-menu-item index="1-1">选项1</el-menu-item>
-            <el-menu-item index="1-2">选项2</el-menu-item>
-          </el-menu-item-group>
-          <el-menu-item-group title="分组2">
-            <el-menu-item index="1-3">选项3</el-menu-item>
-          </el-menu-item-group>
-          <el-submenu index="1-4">
-            <template slot="title">选项4</template>
-            <el-menu-item index="1-4-1">选项1</el-menu-item>
-          </el-submenu>
-        </el-submenu>
-        <el-menu-item index="2">
-          <i class="el-icon-menu"></i>
-          <span slot="title">导航二</span>
-        </el-menu-item>
-        <el-menu-item index="3" disabled>
-          <i class="el-icon-document"></i>
-          <span slot="title">导航三</span>
-        </el-menu-item>
-        <el-menu-item index="4">
-          <i class="el-icon-setting"></i>
-          <span slot="title">导航四</span>
-        </el-menu-item>
-      </el-menu>
-    </el-col>
-  </el-row>
+  <a-layout-sider class="layout-side" :trigger="null" collapsible v-model="collapsed">
+    <div class="logo" />
+    <a-menu theme="dark" mode="inline" :defaultSelectedKeys="['1']">
+      <a-menu-item key="1">
+        <router-link to="/dashboard">
+          <a-icon type="user" />
+          <span>Dashboard</span>
+        </router-link>
+      </a-menu-item>
+      <a-menu-item key="2">
+        <router-link to="/news/list">
+          <a-icon type="video-camera" />
+          <span>NEWS</span>
+        </router-link>
+      </a-menu-item>
+      <a-menu-item key="3">
+        <a-icon type="upload" />
+        <span>LOGO</span>
+      </a-menu-item>
+    </a-menu>
+  </a-layout-sider>
 </template>
 <script>
 export default {
-  methods: {
-    handleOpen(key, keyPath) {
-      console.log(key, keyPath);
-    },
-    handleClose(key, keyPath) {
-      console.log(key, keyPath);
-    }
-  }
+  props: ["collapsed"],
+  data() {
+    return {};
+  },
+  methods: {}
 };
 </script>
-<style lang="less" scoped>
-.sider-menu-logo {
-  height: 64px;
-  line-height: 64px;
-  position: relative;
-  padding: 0 24px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s;
-  img {
-    display: inline-block;
+<style lang="less" >
+.layout-side {
+  .logo {
     height: 32px;
-    vertical-align: middle;
-    margin-right: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 16px;
   }
 }
 </style>

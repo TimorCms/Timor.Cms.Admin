@@ -1,13 +1,13 @@
 import Vue from 'vue'
+import Antd from 'ant-design-vue';
 
-import ElementUI from 'element-ui';
-import 'element-ui/lib/theme-chalk/index.css';
+import 'ant-design-vue/dist/antd.css';
 import '@/main.less'
 
 import App from '@/App.vue'
 import router from '@/router'
 
-Vue.use(ElementUI);
+Vue.use(Antd);
 
 Vue.config.productionTip = false
 
