@@ -1,28 +1,31 @@
 <template>
-  <div class="login-content">
-    <div>CMS系统登录</div>
-    <a-form-model :model="formInline" @submit="handleSubmit" @submit.native.prevent>
-      <a-form-model-item>
-        <a-input v-model="formInline.user" placeholder="Username">
-          <a-icon slot="prefix" type="user" style="color:rgba(0,0,0,.25)" />
-        </a-input>
-      </a-form-model-item>
-      <a-form-model-item>
-        <a-input v-model="formInline.password" type="password" placeholder="Password">
-          <a-icon slot="prefix" type="lock" style="color:rgba(0,0,0,.25)" />
-        </a-input>
-      </a-form-model-item>
-      <a-form-model-item>
-        <a-button
-          type="primary"
-          html-type="submit"
-          :disabled="formInline.user === '' || formInline.password === ''"
-        >Log in</a-button>
-      </a-form-model-item>
-    </a-form-model>
-  </div>
+    <div class="login-content">
+      <div>CMS系统登录</div>
+      <a-form-model :model="formInline" @submit="handleSubmit" @submit.native.prevent>
+        <a-form-model-item>
+          <a-input v-model="formInline.user" placeholder="Username">
+            <a-icon slot="prefix" type="user" style="color:rgba(0,0,0,.25)" />
+          </a-input>
+        </a-form-model-item>
+        <a-form-model-item>
+          <a-input v-model="formInline.password" type="password" placeholder="Password">
+            <a-icon slot="prefix" type="lock" style="color:rgba(0,0,0,.25)" />
+          </a-input>
+        </a-form-model-item>
+        <a-form-model-item>
+          <a-button
+            type="primary"
+            html-type="submit"
+            :disabled="formInline.user === '' || formInline.password === ''"
+          >Log in</a-button>
+        </a-form-model-item>
+      </a-form-model>
+    </div>
+
 </template>
 <script>
+import httpClient from "../../core/services/httpclient";
+
 export default {
   data() {
     return {
@@ -34,8 +37,16 @@ export default {
   },
   methods: {
     handleSubmit(e) {
-      console.log(this.formInline);
-      this.$router.push("dashboard");
+      httpClient
+        .post("https://localhost:5001/api/v1/accounts/token", {
+          userName: "string",
+          password: "string"
+        })
+        .then(res => {
+          console.log(res);
+        });
+
+      // this.$router.push("dashboard");
     }
   }
 };

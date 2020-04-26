@@ -10,6 +10,7 @@
     </a-layout>
   </a-layout>-->
   <a-layout class="main-layout">
+    <a-spin />
     <cms-side v-bind:collapsed="menuStatus"></cms-side>
     <a-layout>
       <a-layout-header style="background: #fff; padding: 0">
