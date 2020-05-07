@@ -17,7 +17,9 @@ export default (function () {
                 }).then(result => {
                     resolver(result.data);
                 })
-                .catch(reject);
+                .catch(reason=>{
+                    reject(reason.response.data);
+                });
         })
     };
 
