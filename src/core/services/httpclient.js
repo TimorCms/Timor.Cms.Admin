@@ -18,7 +18,12 @@ export default (function () {
                     resolver(result.data);
                 })
                 .catch(reason=>{
-                    reject(reason.response.data);
+                    let errorReason = {errorMessage:"请检查服务器连接是否正常!",errorDetail:"未从服务器获得任何数据，请检查API服务是否正常！"};
+                    if(reason.response && reason.response.data){
+                        errorReason = reason.response.data;
+                    }
+
+                    reject(errorReason);
                 });
         })
     };
@@ -37,7 +42,7 @@ export default (function () {
             return request(url, 'put', null, requestContent, headers, null);
         },
 
-        delete(url, params, headers = null) {
+        delete(url, params, headers = null) { 
             return request(url, 'delete', params, null, headers, null);
         }
     }
