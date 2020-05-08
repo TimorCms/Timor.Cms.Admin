@@ -5,16 +5,22 @@
       <a-menu-item key="1">
         <router-link to="/dashboard">
           <a-icon type="user" />
-          <span>Dashboard</span>
+          <span>首页</span>
         </router-link>
       </a-menu-item>
-      <a-menu-item key="2">
+       <a-menu-item key="2">
+        <router-link to="/category/index">
+          <a-icon type="appstore" />
+          <span>分类</span>
+        </router-link>
+      </a-menu-item>
+      <a-menu-item key="3">
         <router-link to="/news/list">
           <a-icon type="video-camera" />
           <span>NEWS</span>
         </router-link>
       </a-menu-item>
-      <a-menu-item key="3">
+      <a-menu-item key="4">
         <a-icon type="upload" />
         <span>LOGO</span>
       </a-menu-item>

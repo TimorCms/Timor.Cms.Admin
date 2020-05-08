@@ -12,12 +12,7 @@
           </a-input>
         </a-form-model-item>
         <a-form-model-item>
-          <a-input
-            v-model="formInline.password"
-            type="password"
-            placeholder="密码"
-            size="large"
-          >
+          <a-input v-model="formInline.password" type="password" placeholder="密码" size="large">
             <a-icon slot="prefix" type="lock" style="color:rgba(0,0,0,.25)" />
           </a-input>
         </a-form-model-item>
@@ -48,13 +43,13 @@ export default {
   methods: {
     handleSubmit(e) {
       httpClient
-        .post("https://localhost:5001/api/v1/accounts/token", this.formInline)
+        .post("/api/v1/accounts/token", this.formInline)
         .then(res => {
           this.$notification.success({
             message: "登录成功",
             description: ""
           });
-          window.sessionStorage.setItem("session", JSON.stringify(res));
+          window.localStorage.setItem("session", JSON.stringify(res));
         })
         .catch(reason => {
           console.log(123);
@@ -84,19 +79,19 @@ export default {
   .header {
     margin: 10px auto;
     text-align: center;
-    height: 44px;
-    line-height: 44px;
+    height: 66px;
+    line-height: 66px;
   }
   .header img {
-    width: 44px;
+    width: 66px;
   }
   .header span {
     font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
     font-weight: 600;
     font-size: 33px;
     color: #000000;
-    top:8px;
-    margin-left:5px;
+    top: 8px;
+    margin-left: 5px;
     position: relative;
   }
   .main {

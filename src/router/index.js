@@ -4,6 +4,7 @@ import Router from 'vue-router'
 import MainLayout from '@/core/layout/MainLayout'
 
 import newsRouter from './modules/news'
+import categoryRouter from './modules/category'
 
 const VueRouterPush = Router.prototype.push
 Router.prototype.push = function push(to) {
@@ -31,7 +32,8 @@ export const routes = [
       },
     ]
   },
-  newsRouter
+  newsRouter,
+  categoryRouter
 ]
 
 const createRouter = () => new Router({
