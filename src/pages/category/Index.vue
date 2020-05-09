@@ -29,7 +29,6 @@
 </template>
 
 <script>
-import httpClient from "../../core/services/httpclient";
 
 export default {
   data() {
@@ -49,7 +48,7 @@ export default {
       console.log(e);
     },
     getCategories() {
-      httpClient.get("/api/v1/categories").then(categories => {
+       this.$http.get("/api/v1/categories").then(categories => {
         categories = [
           {
             id: "5ea54fc7b3e8870292811f34",

@@ -29,7 +29,6 @@
   </div>
 </template>
 <script>
-import httpClient from "../../core/services/httpclient";
 
 export default {
   data() {
@@ -42,7 +41,7 @@ export default {
   },
   methods: {
     handleSubmit(e) {
-      httpClient
+      this.$http
         .post("/api/v1/accounts/token", this.formInline)
         .then(res => {
           this.$notification.success({
