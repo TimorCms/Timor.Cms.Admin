@@ -49,6 +49,7 @@ export default {
             description: ""
           });
           window.localStorage.setItem("session", JSON.stringify(res));
+          this.$router.push("dashboard");
         })
         .catch(reason => {
           console.log(123);
@@ -56,9 +57,7 @@ export default {
             message: "登录失败",
             description: reason.errorMessage
           });
-        });
-
-      // this.$router.push("dashboard");
+        });      
     }
   }
 };

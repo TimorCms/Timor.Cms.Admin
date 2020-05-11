@@ -3,27 +3,29 @@
     <a-row :gutter="24" style>
       <a-col :span="6">
         <a-card title="分类列表" style="height:calc(100vh - 164px)">
-          <a slot="extra" href="#">新增</a>
+          <a slot="extra" href="#" @click.prevent="resetEdit">新增</a>
           <a-tree
             :tree-data="categories"
             :replaceFields="{children:'children', title:'name', key:'id' }"
-            autoExpandParent
-          >
-          </a-tree>
+            @select="onSelectCategory"
+            @expand="onExpand"
+            :expandedKeys="expandedCategories"
+            :autoExpandParent="autoExpandParent"
+          ></a-tree>
         </a-card>
       </a-col>
       <a-col :span="12" style="margin-top:50px;">
         <a-form
-          :form="editModel"
+          :form="editForm"
           :label-col="{ span: 5 }"
           :wrapper-col="{ span: 12 }"
-          @submit="createOrUpdateCategory"
+          @submit.prevent="createOrUpdateCategory"
         >
           <a-form-item label="分类名称">
-            <a-input v-model="editModel.name" />
+            <a-input v-decorator="['name', { rules: [{ required: true, message: '请输入分类名称!' }] }]" />
           </a-form-item>
           <a-form-item label="上级分类">
-            <a-select v-model="editModel.parentCategoryId" placeholder="无上级分类" allowClear>
+            <a-select v-decorator="['parentCategoryId']" placeholder="无上级分类" allowClear>
               <a-select-option
                 v-for="category in allCategories"
                 :key="category.id"
@@ -32,12 +34,12 @@
             </a-select>
           </a-form-item>
           <a-form-item label="排序">
-            <a-input-number id="inputNumber" v-model="editModel.priority" :min="1" :max="1000000" />
+            <a-input-number id="inputNumber" v-decorator="['priority']" :min="1" :max="1000000" />
           </a-form-item>
           <a-form-item label="分类描述">
             <a-textarea
               placeholder
-              v-model="editModel.description"
+              v-decorator="['description']"
               :auto-size="{ minRows: 3, maxRows: 6 }"
             />
           </a-form-item>
@@ -51,49 +53,51 @@
 </template>
 
 <script>
+class EditCategoryModel {
+  id = null;
+  name = "";
+  description = "";
+  priority = 99;
+  parentCategoryId = null;
+
+  constructor({ name, description, priority, parentCategoryId }) {
+    this.name = name;
+    this.description = description;
+    this.priority = priority;
+    this.parentCategoryId = parentCategoryId;
+  }
+
+  reset() {
+    this.name = "";
+    this.description = "";
+    this.priority = 99;
+    this.parentCategoryId = null;
+  }
+}
+
 export default {
   data() {
     return {
-      expandedKeys: [],
+      expandedCategories: [],
       searchValue: "",
       autoExpandParent: true,
       allCategories: [],
       categories: [],
-      editModel: {
-        id: null,
-        name: "",
-        description: "",
-        priority: 99,
-        parentCategoryId: ""
-      },
-      rules: {
-        name: [
-          {
-            required: true,
-            message: "Please input Activity name",
-            trigger: "blur"
-          },
-          {
-            min: 3,
-            max: 5,
-            message: "Length should be 3 to 5",
-            trigger: "blur"
-          }
-        ]
-      }
+      currentEditId: Symbol(),
+      editForm: this.$form.createForm(this, {
+        name: "editForm",
+        initialValue: new EditCategoryModel({})
+      })
     };
   },
   methods: {
     onExpand(expandedKeys) {
-      this.expandedKeys = expandedKeys;
+      this.expandedCategories = expandedKeys;
       this.autoExpandParent = false;
-    },
-    onChange(e) {
-      console.log(e);
     },
     getCategories() {
       this.$http.get("/api/v1/categories").then(categories => {
-        this.allCategories = Object.assign({}, categories);
+        this.allCategories = Object.assign([], categories);
 
         this.categories = [];
 
@@ -103,6 +107,8 @@ export default {
 
           this.categories = topCategories;
         }
+
+        this.expandedCategories = this.allCategories.map(c => c.id);
       });
     },
     poulateSubCategories(topCategories, categories) {
@@ -116,16 +122,24 @@ export default {
         }
       }
     },
-    createOrUpdateCategory(e) {
-      e.preventDefault();
-      if (this.editModel.id) {
-        this.update();
-      } else {
-        this.create();
-      }
+    createOrUpdateCategory() {
+      this.editForm.validateFields((err, formValue) => {
+        if (err) {
+          this.$notification.warning({
+            message: "表单校验失败，请检查！",
+            description: ""
+          });
+        } else {
+          if (this.currentEditId) {
+            this.update(formValue);
+          } else {
+            this.create(formValue);
+          }
+        }
+      });
     },
-    create() {
-      this.$http.post("/api/v1/categories", this.editModel).then(() => {
+    create(formValue) {
+      this.$http.post("/api/v1/categories", formValue).then(() => {
         this.$notification.success({
           message: "新增分类成功",
           description: ""
@@ -134,25 +148,28 @@ export default {
         this.getCategories();
       });
     },
-    update() {
-      this.$http.put("/api/v1/categories", this.editModel).then(() => {
-        this.$notification.success({
-          message: "更新分类成功",
-          description: ""
+    update(formValue) {
+      this.$http
+        .put(`/api/v1/categories/${this.currentEditId}`, formValue)
+        .then(() => {
+          this.$notification.success({
+            message: "更新分类成功",
+            description: ""
+          });
+          this.getCategories();
         });
-        this.resetEdit();
-        this.getCategories();
-      });
     },
     resetEdit() {
-      this.editModel = {
-        id: null,
-        name: "",
-        description: "",
-        priority: 99,
-        parentCategoryId: ""
-      };
-    }
+      this.currentEditId = Symbol();
+      this.editForm.resetFields;
+    },
+    onSelectCategory([selectKey]) {
+      let category = this.allCategories.find(x => x.id == selectKey);
+      // this.editForm.setFieldsValue(new EditCategoryModel(category));
+      this.currentEditId = selectKey;
+      this.editForm.setFieldsValue(new EditCategoryModel(category));
+    },
+    addSubCategory() {}
   },
   mounted() {},
   created() {
