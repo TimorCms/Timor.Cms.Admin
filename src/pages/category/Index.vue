@@ -34,7 +34,12 @@
             </a-select>
           </a-form-item>
           <a-form-item label="排序">
-            <a-input-number id="inputNumber" v-decorator="['priority']" :min="1" :max="1000000" />
+            <a-input-number
+              id="inputNumber"
+              v-decorator="['priority',{initialValue:99}]"
+              :min="1"
+              :max="1000000"
+            />
           </a-form-item>
           <a-form-item label="分类描述">
             <a-textarea
@@ -86,7 +91,7 @@ export default {
       currentEditId: Symbol(),
       editForm: this.$form.createForm(this, {
         name: "editForm",
-        initialValue: new EditCategoryModel({})
+        initialValue: new EditCategoryModel({ })
       })
     };
   },
@@ -161,7 +166,7 @@ export default {
     },
     resetEdit() {
       this.currentEditId = Symbol();
-      this.editForm.resetFields;
+      this.editForm.resetFields();
     },
     onSelectCategory([selectKey]) {
       let category = this.allCategories.find(x => x.id == selectKey);
