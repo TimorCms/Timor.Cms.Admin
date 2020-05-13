@@ -29,7 +29,6 @@
   </div>
 </template>
 <script>
-import httpClient from "../../core/services/httpclient";
 
 export default {
   data() {
@@ -42,7 +41,7 @@ export default {
   },
   methods: {
     handleSubmit(e) {
-      httpClient
+      this.$http
         .post("/api/v1/accounts/token", this.formInline)
         .then(res => {
           this.$notification.success({
@@ -50,6 +49,7 @@ export default {
             description: ""
           });
           window.localStorage.setItem("session", JSON.stringify(res));
+          this.$router.push("dashboard");
         })
         .catch(reason => {
           console.log(123);
@@ -57,9 +57,7 @@ export default {
             message: "登录失败",
             description: reason.errorMessage
           });
-        });
-
-      // this.$router.push("dashboard");
+        });      
     }
   }
 };

@@ -1,6 +1,13 @@
 import axios from "axios";
 
-export default (function () {
+export default {
+    install(Vue) {
+        Vue.prototype.$http = httpClient;
+    }
+}
+
+
+var httpClient = (function () {
     let request = function (url, method, params, body, headers, config) {
         return new Promise((resolver, reject) => {
             if (url.startsWith('/api')) {
@@ -33,20 +40,20 @@ export default (function () {
     };
 
     return {
-        get(url, params = null, headers = null) {
+        get(url, params = {}, headers = {}) {
             this.requsetCont + 1;
             return request(url, 'get', params, null, headers, null);
         },
 
-        post(url, requestContent, headers = null) {
+        post(url, requestContent, headers = {}) {
             return request(url, 'post', null, requestContent, headers, null);
         },
 
-        put(url, requestContent, headers = null) {
+        put(url, requestContent, headers = {}) {
             return request(url, 'put', null, requestContent, headers, null);
         },
 
-        delete(url, params, headers = null) {
+        delete(url, params, headers = {}) {
             return request(url, 'delete', params, null, headers, null);
         }
     }
