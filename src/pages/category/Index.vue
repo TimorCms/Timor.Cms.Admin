@@ -128,20 +128,14 @@ export default {
       }
     },
     createOrUpdateCategory() {
-      this.editForm.validateFields((err, formValue) => {
-        if (err) {
-          this.$notification.warning({
+      new Promise((resolve,reject)=>{
+        this.editForm.validateFields((err, formValue) => err ? reject(err) : resolve(formValue))
+      })
+      .then((formValue)=> (this.currentEditId ? this.update : this.create)(formValue))
+      .catch((err)=>this.$notification.warning({
             message: "表单校验失败，请检查！",
             description: ""
-          });
-        } else {
-          if (this.currentEditId) {
-            this.update(formValue);
-          } else {
-            this.create(formValue);
-          }
-        }
-      });
+      }));
     },
     create(formValue) {
       this.$http.post("/api/v1/categories", formValue).then(() => {
@@ -170,7 +164,6 @@ export default {
     },
     onSelectCategory([selectKey]) {
       let category = this.allCategories.find(x => x.id == selectKey);
-      // this.editForm.setFieldsValue(new EditCategoryModel(category));
       this.currentEditId = selectKey;
       this.editForm.setFieldsValue(new EditCategoryModel(category));
     },
