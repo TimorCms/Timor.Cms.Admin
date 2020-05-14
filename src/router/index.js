@@ -6,6 +6,8 @@ import MainLayout from '@/core/layout/MainLayout'
 import newsRouter from './modules/news'
 import categoryRouter from './modules/category'
 
+import { loginService } from '../core/services';
+
 const VueRouterPush = Router.prototype.push
 Router.prototype.push = function push(to) {
   return VueRouterPush.call(this, to).catch(err => err)
@@ -47,4 +49,12 @@ export function resetRouter() {
   router.matcher = newRouter.matcher
 }
 
+router.beforeEach((to, from, next) => {
+  if (to.path === '/login' || loginService.isLogin()) {
+    next();
+  } else {
+    loginService.logout();
+    next('/login');
+  }
+})
 export default router

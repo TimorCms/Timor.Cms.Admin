@@ -29,6 +29,7 @@
   </div>
 </template>
 <script>
+import { loginService } from "../../core/services";
 
 export default {
   data() {
@@ -48,7 +49,7 @@ export default {
             message: "登录成功",
             description: ""
           });
-          window.localStorage.setItem("session", JSON.stringify(res));
+          loginService.login(res);
           this.$router.push("dashboard");
         })
         .catch(reason => {
@@ -57,7 +58,12 @@ export default {
             message: "登录失败",
             description: reason.errorMessage
           });
-        });      
+        });
+    }
+  },
+  created() {
+    if (loginService.isLogin()) {
+      this.$router.push("dashboard");
     }
   }
 };
