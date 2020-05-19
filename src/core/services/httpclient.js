@@ -1,4 +1,7 @@
 import axios from "axios";
+import router from '../../router';
+import { notification } from 'ant-design-vue';
+import { loginService } from '../services'
 
 export default {
     install(Vue) {
@@ -6,20 +9,22 @@ export default {
     }
 }
 
-
 var httpClient = (function () {
+
     let request = function (url, method, params, body, headers, config) {
         return new Promise((resolver, reject) => {
             if (url.startsWith('/api')) {
                 url = `https://localhost:5001${url}`;
             }
 
+            var token = loginService.getToken();
+
             axios.request({
                 url: url,
                 method: method,
                 params: params,
                 headers: {
-                    Authorization: "xxx",
+                    Authorization: token,
                     ContentType: "application/json",
                     ...headers,
                 },
@@ -30,10 +35,22 @@ var httpClient = (function () {
             })
                 .catch(reason => {
                     let errorReason = { errorMessage: "请检查服务器连接是否正常!", errorDetail: "未从服务器获得任何数据，请检查API服务是否正常！" };
-                    if (reason.response && reason.response.data) {
-                        errorReason = reason.response.data;
+                    if (reason.response) {
+                        if (reason.response.date) {
+                            errorReason = reason.response.data;
+                        }
+
+                        if (reason.response.status === 401) {
+                            loginService.logout();
+                            router.push('/login');
+                            reject(errorReason);
+                        }
                     }
 
+                    notification.warn({
+                        message: errorReason.errorMessage,
+                        description: errorReason.errorDetail
+                    });
                     reject(errorReason);
                 });
         })
