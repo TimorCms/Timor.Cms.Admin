@@ -15,10 +15,10 @@
               <template slot="title" slot-scope="{ name ,id }">
                 <a-dropdown :trigger="['click']">
                   <span>{{ name }}</span>
-                  <a-menu slot="overlay" @click="clickTreeContextMenu($event,id)">
-                    <a-menu-item key="edit">编辑</a-menu-item>
-                    <a-menu-item key="createSub">新增子分类</a-menu-item>
-                    <a-menu-item key="delete">删除</a-menu-item>
+                  <a-menu slot="overlay" @click="$event.item.value(id)">
+                    <a-menu-item :value="onSelectCategory">编辑</a-menu-item>
+                    <a-menu-item :value="addSubCategory">新增子分类</a-menu-item>
+                    <a-menu-item :value="deleteCategory">删除</a-menu-item>
                   </a-menu>
                 </a-dropdown>
               </template>
@@ -202,40 +202,29 @@ export default {
       this.currentEditId = selectKey;
       this.editForm.setFieldsValue(new EditCategoryModel(category));
     },
-    clickTreeContextMenu({ key }, id) {
-      switch (key) {
-        case "edit":
-          this.onSelectCategory(id);
-          break;
-        case "delete":
-          this.delete(id);
-          break;
-        case "createSub":
-          this.addSubCategory(id);
-          break;
-      }
-    },
     addSubCategory(id) {
       this.currentEditId = undefined;
       this.editForm.resetFields();
       this.editForm.setFieldsValue({ parentCategoryId: id });
     },
-    delete(id) {
-      this.$confirm({
-        title: "危险操作！！",
-        content: "您确定要删除该分类吗？",
-        okText: "确认",
-        cancelText: "取消",
-        onOk: () => {
-          this.$http.delete(`/api/v1/categories/${id}`).then(() => {
-            this.$notification.success({
-              message: "删除分类成功",
-              description: ""
-            });
-            this.getCategories();
-          });
-        }
+    async deleteCategory(id) {
+      await new Promise(resolve =>
+        this.$confirm({
+          title: "危险操作！！",
+          content: "您确定要删除该分类吗？",
+          okText: "确认",
+          cancelText: "取消",
+          onOk: resolve
+        })
+      );
+
+      await this.$http.delete(`/api/v1/categories/${id}`);
+
+      this.$notification.success({
+        message: "删除分类成功",
+        description: ""
       });
+      this.getCategories();
     }
   },
   created() {
