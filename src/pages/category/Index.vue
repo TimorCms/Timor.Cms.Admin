@@ -4,16 +4,29 @@
       <a-col :span="6">
         <a-card title="分类列表" style="height:calc(100vh - 164px)">
           <a slot="extra" href="#" @click.prevent="resetEdit">新增</a>
-          <a-tree
-            :tree-data="categories"
-            :replaceFields="{children:'children', title:'name', key:'id' }"
-            @select="onSelectCategory"
-            @expand="onExpand"
-            :expandedKeys="expandedCategories"
-            :autoExpandParent="autoExpandParent"
-          ></a-tree>
+          <a-spin :spinning="isOnLoading">
+            <a-tree
+              :tree-data="categories"
+              :replaceFields="{children:'children', title:'name', key:'id' }"
+              @expand="onExpand"
+              :expandedKeys="expandedCategories"
+              :autoExpandParent="autoExpandParent"
+            >
+              <template slot="title" slot-scope="{ name ,id }">
+                <a-dropdown :trigger="['click']">
+                  <span>{{ name }}</span>
+                  <a-menu slot="overlay" @click="$event.item.value(id)">
+                    <a-menu-item :value="onSelectCategory">编辑</a-menu-item>
+                    <a-menu-item :value="addSubCategory">新增子分类</a-menu-item>
+                    <a-menu-item :value="deleteCategory">删除</a-menu-item>
+                  </a-menu>
+                </a-dropdown>
+              </template>
+            </a-tree>
+          </a-spin>
         </a-card>
       </a-col>
+
       <a-col :span="12" style="margin-top:50px;">
         <a-form
           :form="editForm"
@@ -49,7 +62,7 @@
             />
           </a-form-item>
           <a-form-item :wrapper-col="{ span: 12, offset: 5 }">
-            <a-button type="primary" html-type="submit">提交</a-button>
+            <a-button type="primary" html-type="submit" :loading="isOnSaving">提交</a-button>
           </a-form-item>
         </a-form>
       </a-col>
@@ -88,10 +101,12 @@ export default {
       autoExpandParent: true,
       allCategories: [],
       categories: [],
-      currentEditId: Symbol(),
+      isOnSaving: false,
+      isOnLoading: false,
+      currentEditId: undefined,
       editForm: this.$form.createForm(this, {
         name: "editForm",
-        initialValue: new EditCategoryModel({ })
+        initialValue: new EditCategoryModel({})
       })
     };
   },
@@ -101,23 +116,32 @@ export default {
       this.autoExpandParent = false;
     },
     getCategories() {
-      this.$http.get("/api/v1/categories").then(categories => {
-        this.allCategories = Object.assign([], categories);
+      this.isOnLoading = true;
+      this.$http
+        .get("/api/v1/categories")
+        .then(categories => {
+          this.allCategories = Object.assign([], categories);
 
-        this.categories = [];
+          this.categories = [];
 
-        if (categories) {
-          var topCategories = categories.filter(x => !x.parentCategoryId);
-          this.poulateSubCategories(topCategories, categories);
+          if (categories) {
+            var topCategories = categories.filter(x => !x.parentCategoryId);
+            this.poulateSubCategories(topCategories, categories);
 
-          this.categories = topCategories;
-        }
+            this.categories = topCategories;
+          }
 
-        this.expandedCategories = this.allCategories.map(c => c.id);
-      });
+          this.expandedCategories = this.allCategories.map(c => c.id);
+        })
+        .finally(() => {
+          this.isOnLoading = false;
+        });
     },
     poulateSubCategories(topCategories, categories) {
       for (var topCategory of topCategories) {
+        topCategory.scopedSlots = { title: "title", key: "key" };
+        topCategory.slots = { title: "title", key: "key" };
+
         var subCategories = categories.filter(
           x => x.parentCategoryId === topCategory.id
         );
@@ -128,14 +152,23 @@ export default {
       }
     },
     createOrUpdateCategory() {
-      new Promise((resolve,reject)=>{
-        this.editForm.validateFields((err, formValue) => err ? reject(err) : resolve(formValue))
+      this.isOnSaving = true;
+      new Promise((resolve, reject) => {
+        this.editForm.validateFields((err, formValue) =>
+          err ? reject(err) : resolve(formValue)
+        );
       })
-      .then((formValue)=> (this.currentEditId ? this.update : this.create)(formValue))
-      .catch((err)=>this.$notification.warning({
+        .then(formValue =>
+          (this.currentEditId ? this.update : this.create)(formValue)
+        )
+        .catch(err => {
+          console.warn(err);
+          this.isOnSaving = false;
+          this.$notification.warning({
             message: "表单校验失败，请检查！",
             description: ""
-      }));
+          });
+        });
     },
     create(formValue) {
       this.$http.post("/api/v1/categories", formValue).then(() => {
@@ -145,6 +178,7 @@ export default {
         });
         this.resetEdit();
         this.getCategories();
+        this.isOnSaving = false;
       });
     },
     update(formValue) {
@@ -156,20 +190,43 @@ export default {
             description: ""
           });
           this.getCategories();
+          this.isOnSaving = false;
         });
     },
     resetEdit() {
-      this.currentEditId = Symbol();
+      this.currentEditId = undefined;
       this.editForm.resetFields();
     },
-    onSelectCategory([selectKey]) {
+    onSelectCategory(selectKey) {
       let category = this.allCategories.find(x => x.id == selectKey);
       this.currentEditId = selectKey;
       this.editForm.setFieldsValue(new EditCategoryModel(category));
     },
-    addSubCategory() {}
+    addSubCategory(id) {
+      this.currentEditId = undefined;
+      this.editForm.resetFields();
+      this.editForm.setFieldsValue({ parentCategoryId: id });
+    },
+    async deleteCategory(id) {
+      await new Promise(resolve =>
+        this.$confirm({
+          title: "危险操作！！",
+          content: "您确定要删除该分类吗？",
+          okText: "确认",
+          cancelText: "取消",
+          onOk: resolve
+        })
+      );
+
+      await this.$http.delete(`/api/v1/categories/${id}`);
+
+      this.$notification.success({
+        message: "删除分类成功",
+        description: ""
+      });
+      this.getCategories();
+    }
   },
-  mounted() {},
   created() {
     this.getCategories();
   }
